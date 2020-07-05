@@ -37,11 +37,17 @@ class User < ApplicationRecord
     update_attribute(:remember_digest, nil)
   end
   
+  def authenticated?(attribute, token)
+    digest = send("#{attribute}_digest")
+    return false if digest.nil?
+    BCrypt::Password.new(digest).is_password?(token)
+  end
+  
   private
 
     # メールアドレスをすべて小文字にする
     def downcase_email
-      self.email = email.downcase
+      email.downcase!
     end
 
     # 有効化トークンとダイジェストを作成および代入する
@@ -49,4 +55,5 @@ class User < ApplicationRecord
       self.activation_token  = User.new_token
       self.activation_digest = User.digest(activation_token)
     end
+    
 end
